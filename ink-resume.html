@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>王子萱 · 水墨简历</title>
+<style>
+/* ============ 水墨主题变量 ============ */
+:root{
+  --ink:#1a1a1a;
+  --ink-soft:#3a3a3a;
+  --ink-light:#6b6b6b;
+  --ink-faint:#a8a8a8;
+  --ink-mist:#d9d4c8;
+  --paper:#f5f0e6;
+  --paper-warm:#efe8d8;
+  --paper-deep:#e8dfca;
+  --seal:#a33;
+  --seal-deep:#8a2a2a;
+  --gold:#b8860b;
+  --shadow:0 18px 50px rgba(40,30,15,0.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"Songti SC","STSong","SimSun","Source Han Serif SC","Noto Serif SC",serif;
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  user-select:none;
+}
+/* ============ 复杂水墨背景 ============ */
+.bg-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 20%, rgba(120,110,90,0.10), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 75%, rgba(80,70,55,0.12), transparent 65%),
+    radial-gradient(circle at 70% 30%, rgba(200,180,140,0.08), transparent 55%),
+    linear-gradient(160deg, #f7f1e4 0%, #efe7d2 45%, #e8dec5 100%);
+}
+.bg-mountains{position:fixed;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0.22;overflow:hidden}
+.bg-mountains svg{position:absolute;top:0;left:0;width:200%;height:100%;display:block;animation:mtScroll 110s linear infinite}
+@keyframes mtScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* 水墨云朵：与远山同色系（深墨），缓慢自左向右飘动，各自错开速度与时机 */
+.bg-clouds{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.cloud{position:absolute;left:0;animation:cloudDrift linear infinite}
+@keyframes cloudDrift{from{transform:translateX(-30vw)}to{transform:translateX(108vw)}}
+.bg-ink-blob{position:fixed;z-index:1;pointer-events:none;border-radius:50%;filter:blur(40px);opacity:0.10}
+.blob-1{width:380px;height:380px;top:-80px;left:-60px;background:#222}
+.blob-2{width:300px;height:300px;bottom:-60px;right:-40px;background:#3a3a2a}
+.blob-3{width:240px;height:240px;top:40%;left:60%;background:#5a4a2a;opacity:0.06}
+/* 漂浮墨点 */
+.ink-drop{position:fixed;z-index:1;pointer-events:none;border-radius:50%;background:var(--ink);opacity:0.04}
+
+/* ============ 幻灯片系统 ============ */
+.deck{position:relative;z-index:5;height:100vh;display:flex;align-items:center;justify-content:center}
+.slide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:7vh 6vw;opacity:0;visibility:hidden;
+  transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1);
+  transform:translateX(40px) scale(.98);
+}
+.slide.active{opacity:1;visibility:visible;transform:translateX(0) scale(1)}
+.slide.prev{transform:translateX(-40px) scale(.98)}
+
+/* 卷轴卡片 */
+.scroll{
+  position:relative;width:min(860px,92vw);max-height:84vh;overflow:hidden; /* 所有页面一屏显示，禁止上下/左右滚动 */
+  background:linear-gradient(180deg, rgba(255,252,243,0.92), rgba(248,242,226,0.92));
+  border:1px solid rgba(120,100,60,0.22);
+  border-radius:6px;
+  box-shadow:var(--shadow), inset 0 0 60px rgba(140,120,70,0.06);
+  padding:38px 48px;
+  backdrop-filter:blur(2px);
+}
+.scroll::-webkit-scrollbar{width:6px}
+.scroll::-webkit-scrollbar-thumb{background:var(--ink-faint);border-radius:3px}
+.scroll::-webkit-scrollbar-track{background:transparent}
+/* 卷轴轴头 */
+.scroll::before,.scroll::after{
+  content:"";position:absolute;left:-14px;right:-14px;height:18px;
+  background:linear-gradient(180deg,#3a3a3a,#1a1a1a);
+  border-radius:9px;box-shadow:0 4px 14px rgba(0,0,0,0.25);
+}
+.scroll::before{top:-10px}
+.scroll::after{bottom:-10px}
+
+/* ============ 通用排版 ============ */
+.seal{
+  position:absolute;top:24px;right:30px;
+  width:62px;height:62px;
+  background:var(--seal);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;letter-spacing:2px;line-height:1.15;text-align:center;
+  border-radius:4px;transform:rotate(-6deg);
+  box-shadow:0 4px 12px rgba(150,40,40,0.3);
+  font-family:"Songti SC",serif;
+}
+.slide-num{
+  position:absolute;bottom:18px;right:30px;font-size:12px;color:var(--ink-faint);
+  letter-spacing:3px;
+}
+.kicker{font-size:13px;color:var(--ink-light);letter-spacing:8px;margin-bottom:8px}
+.title-cn{font-size:clamp(34px,5vw,52px);font-weight:700;letter-spacing:6px;color:var(--ink);line-height:1.2}
+.divider{
+  width:60px;height:2px;background:var(--ink);margin:14px 0;
+  position:relative;
+}
+.divider::after{content:"";position:absolute;left:70px;top:-3px;width:8px;height:8px;background:var(--ink);border-radius:50%}
+p.body{font-size:16px;line-height:2;color:var(--ink-soft);letter-spacing:1px}
+
+/* ============ 封面 ============ */
+.cover{text-align:center}
+.cover .name-big{font-size:clamp(56px,9vw,96px);font-weight:700;letter-spacing:16px;color:var(--ink);text-indent:16px}
+.cover .subtitle{font-size:18px;color:var(--ink-light);letter-spacing:10px;margin-top:18px}
+.cover .school-line{margin-top:34px;font-size:15px;color:var(--ink-soft);letter-spacing:4px}
+.cover .brush-line{width:120px;height:3px;background:var(--ink);margin:30px auto;position:relative;border-radius:2px}
+.cover .brush-line::before{content:"";position:absolute;left:-20px;top:0;width:24px;height:3px;background:var(--ink);opacity:.4;border-radius:2px}
+.cover .brush-line::after{content:"";position:absolute;right:-14px;top:1px;width:18px;height:1px;background:var(--ink);opacity:.3}
+
+/* ============ 数据网格 ============ */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 26px}
+.info-row{display:flex;align-items:baseline;gap:14px;padding:7px 0;border-bottom:1px dashed rgba(120,100,60,0.2)}
+.info-label{font-size:13px;color:var(--ink-light);letter-spacing:3px;min-width:80px}
+.info-value{font-size:17px;color:var(--ink);letter-spacing:1px}
+
+/* 亮点 */
+.highlight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+.hl-card{
+  background:rgba(255,253,247,0.7);border:1px solid rgba(120,100,60,0.18);
+  border-radius:6px;padding:12px 16px;position:relative; /* 内容框变小，字体不变 */
+  transition:transform .3s, box-shadow .3s;
+}
+.hl-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(60,45,20,0.12)}
+.hl-num{font-size:38px;font-weight:700;color:var(--ink);line-height:1}
+.hl-num .unit{font-size:16px;font-weight:400;color:var(--ink-light);margin-left:4px}
+.hl-card h4{font-size:17px;margin:5px 0 3px;letter-spacing:2px}
+.hl-card p{font-size:13px;color:var(--ink-light);line-height:1.7}
+
+/* 技能 */
+.skill-cluster{margin-bottom:12px}
+.skill-cluster h4{font-size:15px;letter-spacing:3px;margin-bottom:8px;color:var(--ink-soft)}
+.skill-badges{display:flex;flex-wrap:wrap;gap:8px}
+.badge{
+  padding:6px 16px;border:1px solid var(--ink-light);border-radius:20px;
+  font-size:13px;color:var(--ink);letter-spacing:1px;
+  background:rgba(255,253,247,0.5);transition:all .25s;
+}
+.badge:hover{background:var(--ink);color:var(--paper);transform:translateY(-1px)}
+
+/* 爱好 */
+.hobby-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hobby-card{
+  background:rgba(255,253,247,0.7);border:1px solid rgba(120,100,60,0.18);
+  border-radius:6px;padding:16px;
+}
+.hobby-card .h-icon{font-size:30px}
+.hobby-card h4{font-size:18px;margin:6px 0;letter-spacing:2px}
+.hobby-card p{font-size:13px;color:var(--ink-light);line-height:1.8}
+.hobby-tags{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.hobby-tag{font-size:12px;padding:3px 10px;background:var(--paper-deep);border-radius:12px;color:var(--ink-soft)}
+
+/* 证书横向滚动：纯自动自由滚动，无任何手动干预 */
+.cert-scroll-wrap{position:relative;margin-top:2px}
+.cert-scroll{
+  display:flex;gap:20px;overflow-x:auto;
+  padding:8px 6px 16px;
+  scrollbar-width:none;
+}
+.cert-scroll::-webkit-scrollbar{display:none}
+.cert-card{
+  flex:0 0 280px;background:rgba(255,253,247,0.7);border:1px solid rgba(120,100,60,0.18);
+  border-radius:6px;overflow:hidden;cursor:pointer;
+  transition:transform .3s, box-shadow .3s;
+}
+.cert-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 12px 26px rgba(60,45,20,0.15)}
+.cert-card img{width:100%;height:190px;object-fit:cover;display:block}
+.cert-body{padding:12px 14px}
+.cert-org{font-size:12px;color:var(--ink-light);letter-spacing:2px}
+.cert-name{font-size:14px;margin:5px 0;line-height:1.4}
+.cert-level{font-size:12px;padding:2px 8px;background:var(--paper-deep);border-radius:3px;color:var(--ink-soft)}
+
+/* ============ 导航 ============ */
+.nav-bar{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:50;
+  display:flex;align-items:center;gap:18px;
+  background:rgba(26,26,26,0.88);color:#f5f0e6;
+  padding:10px 20px;border-radius:30px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  backdrop-filter:blur(8px);
+}
+.nav-btn{
+  width:34px;height:34px;border:none;border-radius:50%;
+  background:rgba(255,255,255,0.12);color:#f5f0e6;
+  font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s, transform .2s;
+}
+.nav-btn:hover{background:rgba(255,255,255,0.25);transform:scale(1.08)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.dots{display:flex;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);cursor:pointer;transition:all .25s}
+.dot.active{background:#f5f0e6;width:22px;border-radius:4px}
+.slide-counter{font-size:12px;letter-spacing:2px;color:rgba(245,240,230,0.7);min-width:40px;text-align:center}
+
+/* ============ 最后一页 · 感谢阅读 ============ */
+.slide.thanks{ align-items:center; }
+.slide.thanks .scroll{
+  width:min(760px,86vw);max-height:none;
+  padding:56px 48px;
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:visible; /* 让「已阅」印章落章回弹的动画不被框裁剪 */
+}
+.slide.thanks .slide-num{ right:auto; left:30px; } /* 页码让出右下角给印章 */
+.slide.thanks .title-cn{ font-size:clamp(44px,7vw,76px); letter-spacing:22px; text-indent:22px; margin-top:6px; }
+.slide.thanks .kicker{ margin-bottom:18px; }
+.slide.thanks .divider{ margin:24px auto; }
+
+/* ============ 最后一页印章：已阅（方形，落在「感谢阅读」框右下角，落章回弹，盖后淡出） ============ */
+.stamp{
+  --r:-8deg;
+  position:absolute;z-index:85;pointer-events:none;
+  right:24px;bottom:18px; /* 相对「感谢阅读」框（.scroll）右下角定位 */
+  display:flex;align-items:center;justify-content:center;
+  width:112px;height:112px;
+  border:3px solid rgba(176,32,24,0.9);
+  box-shadow:0 0 0 2px rgba(176,32,24,0.9), inset 0 0 0 1px rgba(176,32,24,0.4);
+  border-radius:8px;
+  background:radial-gradient(circle at 38% 35%, rgba(176,32,24,0.14), rgba(176,32,24,0.04) 72%);
+  color:rgba(176,32,24,0.94);
+  font-family:"KaiTi","STKaiti","楷体","SimSun",serif;
+  font-weight:700;font-size:40px;letter-spacing:6px;text-indent:6px;
+  opacity:0;
+  animation:stampHit .5s cubic-bezier(.18,1.5,.4,1) forwards; /* 落章回弹后常驻，不消失 */
+}
+@keyframes stampHit{
+  0%{transform:scale(1.9) rotate(calc(var(--r) + 12deg));opacity:0}
+  55%{transform:scale(0.9) rotate(var(--r));opacity:1}
+  100%{transform:scale(1) rotate(var(--r));opacity:1}
+}
+
+/* ============ 点击毛笔画圆 ============ */
+.brush-layer{
+  position:fixed;z-index:80;pointer-events:none;
+  transition:opacity .6s ease;
+}
+.brush-layer.fade{opacity:0}
+
+/* 灯箱 */
+.lightbox{
+  position:fixed;inset:0;z-index:100;background:rgba(20,18,12,0.85);
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+}
+.lightbox.show{display:flex}
+.lightbox img{max-width:80vw;max-height:80vh;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.lb-close{position:absolute;top:24px;right:30px;color:#f5f0e6;font-size:36px;cursor:pointer;background:none;border:none}
+
+@media (max-width:768px){
+  .scroll{padding:28px 20px}
+  .highlight-grid,.hobby-grid,.grid-2{grid-template-columns:1fr}
+  .cert-card{flex-basis:200px}
+  .cover .name-big{letter-spacing:8px}
+}
+/* 屏幕较矮时整体等比缩小，保证所有页面一屏显示、不出滚动条 */
+@media (max-height:700px){
+  .scroll{transform:scale(0.88)}
+}
+@media (max-height:560px){
+  .scroll{transform:scale(0.76)}
+}
+</style>
+</head>
+<body>
+
+<!-- 复杂水墨背景 -->
+<div class="bg-canvas"></div>
+<!-- 白色极简云朵：单条扁椭圆，最简样式，缓慢飘动 -->
+<div class="bg-clouds">
+  <svg class="cloud" viewBox="0 0 140 50" width="200" height="72" style="top:9vh;animation-duration:120s;animation-delay:-20s">
+    <ellipse cx="70" cy="25" rx="58" ry="14" fill="#ffffff" opacity="0.6"/>
+  </svg>
+  <svg class="cloud" viewBox="0 0 140 50" width="170" height="61" style="top:22vh;animation-duration:150s;animation-delay:-85s">
+    <ellipse cx="70" cy="25" rx="58" ry="14" fill="#ffffff" opacity="0.5"/>
+  </svg>
+  <svg class="cloud" viewBox="0 0 140 50" width="230" height="83" style="top:12vh;animation-duration:100s;animation-delay:-8s">
+    <ellipse cx="70" cy="25" rx="58" ry="14" fill="#ffffff" opacity="0.55"/>
+  </svg>
+  <svg class="cloud" viewBox="0 0 140 50" width="150" height="54" style="top:29vh;animation-duration:135s;animation-delay:-50s">
+    <ellipse cx="70" cy="25" rx="58" ry="14" fill="#ffffff" opacity="0.65"/>
+  </svg>
+</div>
+<div class="bg-mountains">
+  <!-- 单一 SVG 内把山形复制两份首尾相接（周期山脊，左右端点高度与切线完全一致），循环移动时永远无缝衔接 -->
+  <svg preserveAspectRatio="none" viewBox="0 0 2880 900">
+    <path d="M0,600 Q180,470 360,600 T720,600 T1080,600 T1440,600 Q1620,470 1800,600 T2160,600 T2520,600 T2880,600 L2880,900 L0,900 Z" fill="#2a2a2a" opacity="0.5"/>
+    <path d="M0,680 Q220,560 360,680 T720,680 T1080,680 T1440,680 Q1660,560 1800,680 T2160,680 T2520,680 T2880,680 L2880,900 L0,900 Z" fill="#1a1a1a" opacity="0.4"/>
+    <path d="M0,760 Q260,660 360,760 T720,760 T1080,760 T1440,760 Q1700,660 1800,760 T2160,760 T2520,760 T2880,760 L2880,900 L0,900 Z" fill="#0a0a0a" opacity="0.35"/>
+  </svg>
+</div>
+<div class="bg-ink-blob blob-1"></div>
+<div class="bg-ink-blob blob-2"></div>
+<div class="bg-ink-blob blob-3"></div>
+
+<!-- 灯箱 -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">&times;</button>
+  <img id="lbImg" src="" alt="">
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. 封面 -->
+  <section class="slide active" data-slide="0">
+    <div class="scroll cover">
+      <div class="kicker">个 人 简 历</div>
+      <h1 class="name-big">王 子 萱</h1>
+      <div class="brush-line"></div>
+      <div class="subtitle">药物分析专业 · AI技术探索者</div>
+      <div class="school-line">北京石油化工学院 · 2026级 · 本科在读</div>
+      <div class="slide-num">壹 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 2. 联系方式 -->
+  <section class="slide" data-slide="1">
+    <div class="scroll">
+      <div class="seal">联 络</div>
+      <div class="kicker">第 贰 章</div>
+      <h2 class="title-cn">联系方式</h2>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div class="info-row"><span class="info-label">姓　名</span><span class="info-value">王子萱</span></div>
+        <div class="info-row"><span class="info-label">电　话</span><span class="info-value">+86 18341612481</span></div>
+        <div class="info-row"><span class="info-label">邮　箱</span><span class="info-value">2977163369@qq.com</span></div>
+        <div class="info-row"><span class="info-label">学　校</span><span class="info-value">北京石油化工学院</span></div>
+        <div class="info-row"><span class="info-label">专　业</span><span class="info-value">药物分析</span></div>
+        <div class="info-row"><span class="info-label">学　历</span><span class="info-value">本科在读 · 大一</span></div>
+      </div>
+      <div class="slide-num">贰 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 3. 教育背景 -->
+  <section class="slide" data-slide="2">
+    <div class="scroll">
+      <div class="seal">求 学</div>
+      <div class="kicker">第 叁 章</div>
+      <h2 class="title-cn">教育背景</h2>
+      <div class="divider"></div>
+      <div style="padding:8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <h3 style="font-size:22px;letter-spacing:3px">北京石油化工学院</h3>
+          <span style="font-size:14px;color:var(--ink-light)">2026 — 至今</span>
+        </div>
+        <p class="body" style="margin-top:8px">
+          药物分析专业 · 本科在读。入学首年即系统学习专业基础课程，同时自学人工智能前沿技术，
+          完成7项权威AI认证，形成"医药 + AI"的复合型知识结构。
+        </p>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+          <span class="badge">药物分析</span>
+          <span class="badge">分析化学</span>
+          <span class="badge">AI+医药交叉</span>
+        </div>
+      </div>
+      <div class="slide-num">叁 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 4. 亮点成果 -->
+  <section class="slide" data-slide="3">
+    <div class="scroll">
+      <div class="seal">硕 果</div>
+      <div class="kicker">第 肆 章</div>
+      <h2 class="title-cn">亮点成果</h2>
+      <div class="divider"></div>
+      <div class="highlight-grid">
+        <div class="hl-card"><div class="hl-num">7<span class="unit">项</span></div><h4>权威AI认证</h4><p>阿里达摩院+科大讯飞+华为，涵盖训练师、Prompt、微调、RAG、智能体</p></div>
+        <div class="hl-card"><div class="hl-num">3<span class="unit">大平台</span></div><h4>多平台技术覆盖</h4><p>阿里云、讯飞星火、华为云三大AI生态，实战经验丰富</p></div>
+        <div class="hl-card"><div class="hl-num">1<span class="unit">年级</span></div><h4>大一即获高级认证</h4><p>入学首年完成训练师初级到高级全级别认证</p></div>
+        <div class="hl-card"><div class="hl-num">跨<span class="unit">界</span></div><h4>医药+AI复合背景</h4><p>药物分析专业底色叠加AI能力，面向智慧医疗新赛道</p></div>
+      </div>
+      <div class="slide-num">肆 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 5. 技能矩阵 -->
+  <section class="slide" data-slide="4">
+    <div class="scroll">
+      <div class="seal">技 艺</div>
+      <div class="kicker">第 伍 章</div>
+      <h2 class="title-cn">技能矩阵</h2>
+      <div class="divider"></div>
+      <div class="skill-cluster">
+        <h4>◆ AI 核心能力</h4>
+        <div class="skill-badges">
+          <span class="badge">AI训练</span><span class="badge">Prompt工程</span><span class="badge">模型微调</span>
+          <span class="badge">RAG检索</span><span class="badge">智能体开发</span><span class="badge">大模型应用</span>
+        </div>
+      </div>
+      <div class="skill-cluster">
+        <h4>◆ 平台 & 工具</h4>
+        <div class="skill-badges">
+          <span class="badge">阿里云平台</span><span class="badge">科大讯飞星火</span><span class="badge">华为云</span><span class="badge">模型部署</span>
+        </div>
+      </div>
+      <div class="skill-cluster">
+        <h4>◆ 专业领域</h4>
+        <div class="skill-badges">
+          <span class="badge">药物分析</span><span class="badge">AI+医药交叉</span><span class="badge">数据分析</span>
+        </div>
+      </div>
+      <div class="slide-num">伍 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 6. 特长爱好 -->
+  <section class="slide" data-slide="5">
+    <div class="scroll">
+      <div class="seal">雅 趣</div>
+      <div class="kicker">第 陆 章</div>
+      <h2 class="title-cn">特长与爱好</h2>
+      <div class="divider"></div>
+      <div class="hobby-grid">
+        <div class="hobby-card">
+          <div class="h-icon">📚</div>
+          <h4>阅读</h4>
+          <p>热爱阅读，涉猎文学、科普与人工智能前沿资讯。阅读让我保持开放的心态与持续的学习热情。</p>
+          <div class="hobby-tags"><span class="hobby-tag">文学</span><span class="hobby-tag">科普</span><span class="hobby-tag">AI资讯</span><span class="hobby-tag">深度阅读</span></div>
+        </div>
+        <div class="hobby-card">
+          <div class="h-icon">🎨</div>
+          <h4>绘画</h4>
+          <p>从小喜欢绘画，享受用画笔观察与表达世界。绘画培养了观察力、专注力与审美能力。</p>
+          <div class="hobby-tags"><span class="hobby-tag">手绘</span><span class="hobby-tag">插画</span><span class="hobby-tag">素描</span><span class="hobby-tag">创意表达</span></div>
+        </div>
+      </div>
+      <div class="slide-num">陆 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 7. 证书资质 -->
+  <section class="slide" data-slide="6">
+    <div class="scroll">
+      <div class="seal">凭 证</div>
+      <div class="kicker">第 柒 章</div>
+      <h2 class="title-cn">证书资质</h2>
+      <div class="divider"></div>
+      <p class="body" style="font-size:13px;margin-bottom:10px">证书自动滚动展示 · 点击卡片可查看大图</p>
+      <div class="cert-scroll-wrap">
+        <div class="cert-scroll" id="certGrid"></div>
+      </div>
+      <div class="slide-num">柒 / 捌</div>
+    </div>
+  </section>
+
+  <!-- 8. 感谢阅读 -->
+  <section class="slide thanks" data-slide="7">
+    <div class="scroll">
+      <div class="kicker">第 捌 章 · 终 章</div>
+      <h2 class="title-cn">感 谢 阅 读</h2>
+      <div class="divider"></div>
+      <p class="body" style="font-size:15px">点击任意处 · 已阅</p>
+      <div class="slide-num">捌 / 捌</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- 导航条 -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prevBtn" aria-label="上一页">‹</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="nextBtn" aria-label="下一页">›</button>
+  <span class="slide-counter" id="counter">1 / 8</span>
+</div>
+
+<script>
+// ============ 简历数据 ============
+const resume = {
+  certificates: [
+    { org:'阿里达摩院', name:'人工智能训练师（初级）', level:'初级', image:'cert-ali-junior.jpg' },
+    { org:'阿里达摩院', name:'人工智能训练师（高级）', level:'高级', image:'cert-ali-advanced.jpg' },
+    { org:'科大讯飞', name:'Prompt工程师认证', level:'专业认证', image:'cert-xf-prompt.png' },
+    { org:'科大讯飞', name:'微调工程师认证', level:'专业认证', image:'cert-xf-tuning.png' },
+    { org:'科大讯飞', name:'智能体工程师认证', level:'专业认证', image:'cert-xf-agent.png' },
+    { org:'科大讯飞', name:'RAG工程师认证', level:'专业认证', image:'cert-xf-rag.png' },
+    { org:'华为', name:'人工智能初识微认证', level:'微认证', image:'cert-huawei-ai.png' },
+  ]
+};
+
+// ============ 幻灯片导航 ============
+const slides = Array.from(document.querySelectorAll('.slide'));
+const total = slides.length;
+let current = 0;
+const dotsBox = document.getElementById('dots');
+const counter = document.getElementById('counter');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+// 指示点
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.addEventListener('click', () => go(i));
+  dotsBox.appendChild(d);
+});
+const dots = Array.from(dotsBox.children);
+
+function go(n){
+  if(n < 0 || n >= total) return;
+  slides[current].classList.remove('active');
+  if(n < current) slides[current].classList.add('prev'); else slides[current].classList.remove('prev');
+  current = n;
+  slides[current].classList.add('active');
+  slides[current].classList.remove('prev');
+  dots.forEach((d,i)=> d.classList.toggle('active', i===current));
+  counter.textContent = (current+1)+' / '+total;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === total - 1;
+}
+prevBtn.addEventListener('click', ()=> go(current-1));
+nextBtn.addEventListener('click', ()=> go(current+1));
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight'||e.key===' ') go(current+1);
+  if(e.key==='ArrowLeft') go(current-1);
+});
+go(0);
+
+// ============ 点击翻页 + 橘色水墨毛笔画圆 ============
+function brushCircle(x, y){
+  // 直径 1.5 厘米 → 按屏幕实际 dpi 换算成像素（探测 CSS 的 cm 单位）
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;visibility:hidden;width:1.5cm';
+  document.body.appendChild(probe);
+  const DIA = probe.offsetWidth || 57;   // 兜底约 57px
+  probe.remove();
+  const R = DIA / 2;
+  const S = Math.ceil(DIA * 3);          // 画布留出晕染空间
+  const cv = document.createElement('canvas');
+  cv.className = 'brush-layer';
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = S * dpr; cv.height = S * dpr;
+  cv.style.width = S + 'px'; cv.style.height = S + 'px';
+  cv.style.left = (x - S/2) + 'px';
+  cv.style.top = (y - S/2) + 'px';
+  document.body.appendChild(cv);
+  const c = cv.getContext('2d');
+  c.scale(dpr, dpr);
+  const cx = S/2, cy = S/2;
+  // 只画 80% 的圆弧，留约 20% 空隙不闭合；起笔角度随机，更像随手一笔
+  const gap = Math.PI * 2 * 0.20;
+  const start = Math.random() * Math.PI * 2;
+  const end = start + Math.PI * 2 - gap;
+  const dur = 900;
+  const t0 = performance.now();
+  const ORANGE = [212, 102, 22];
+  const w0 = R * 0.36;                   // 起笔最粗
+  const w1 = R * 0.10;                   // 收笔最细（自然提笔）
+  function draw(p){
+    c.clearRect(0, 0, S, S);
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+    const ang = start + (end - start) * p;
+    for(let a = start; a < ang; a += 0.09){
+      const t = (a - start) / (end - start);
+      // 宽窄从头到尾逐渐变小：起笔粗 → 收笔细
+      const w = w1 + (w0 - w1) * Math.pow(1 - t, 1.7);
+      // 颜色渐淡：起笔稍浓 → 收笔几乎淡出（整体不浓）
+      const alpha = 0.14 - 0.09 * t;   // 起笔淡橘 0.14 → 收笔近无 0.05（比上版再淡50%）
+      const jitter = 1 + Math.sin(a * 7 + Math.sin(a * 13)) * 0.05; // 轻微毛边
+      const a2 = Math.min(a + 0.1, ang);
+      const x1 = cx + Math.cos(a) * R, y1 = cy + Math.sin(a) * R;
+      const x2 = cx + Math.cos(a2) * R, y2 = cy + Math.sin(a2) * R;
+      // 底层：宽幅渗墨层（低透明度 → 水墨晕染开的墨韵）
+      c.strokeStyle = `rgba(${ORANGE[0]},${ORANGE[1]},${ORANGE[2]},${alpha * 0.30})`;
+      c.lineWidth = w * 1.8;
+      c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+      // 上层：笔锋主线条（带一点柔光让边缘自然化开）
+      c.shadowColor = `rgba(${ORANGE[0]},${ORANGE[1]},${ORANGE[2]},0.22)`;
+      c.shadowBlur = 6;
+      c.strokeStyle = `rgba(${ORANGE[0]},${ORANGE[1]},${ORANGE[2]},${alpha})`;
+      c.lineWidth = w * jitter;
+      c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+      c.shadowBlur = 0;
+    }
+  }
+  (function anim(now){
+    const p = Math.min(1, (now - t0) / dur);
+    draw(p);
+    if(p < 1){ requestAnimationFrame(anim); }
+    else{
+      requestAnimationFrame(()=> cv.classList.add('fade')); // 画完后整圈渐渐淡去
+      setTimeout(()=> cv.remove(), 700);
+    }
+  })(t0);
+}
+// ============ 最后一页：方形"已阅"印章（落在「感谢阅读」框右下角，只盖一次，常驻不消失） ============
+let stampPlaced = false;
+function placeStamp(){
+  if(stampPlaced) return; // 只盖一次
+  stampPlaced = true;
+  const s = document.createElement('div');
+  s.className = 'stamp';
+  s.style.setProperty('--r', (Math.round(Math.random()*14) - 7)+'deg'); // 落章角度略随机
+  s.textContent = '已阅';
+  document.querySelector('.slide.thanks .scroll').appendChild(s); // 落在「感谢阅读」框右下角
+}
+document.addEventListener('click', e=>{
+  // 交互元素不触发：导航条 / 证书 / 灯箱
+  if(e.target.closest('.nav-bar, .cert-card, .cert-scroll, #lightbox')) return;
+  if(current === total - 1){
+    placeStamp(); // 最后一页：固定右下角落章
+    return;
+  }
+  brushCircle(e.clientX, e.clientY);
+  go((current + 1) % total); // 点击翻下一页
+});
+
+// ============ 证书渲染 ============
+const certScroll = document.getElementById('certGrid');
+const cardsHtml = resume.certificates.map(c => `
+  <div class="cert-card" data-img="${c.image}">
+    <img src="${c.image}" alt="${c.name}" loading="lazy">
+    <div class="cert-body">
+      <div class="cert-org">${c.org}</div>
+      <div class="cert-name">${c.name}</div>
+      <span class="cert-level">${c.level}</span>
+    </div>
+  </div>
+`).join('');
+certScroll.innerHTML = cardsHtml + cardsHtml; // 复制两份 → 无缝循环滚动
+document.querySelectorAll('.cert-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    document.getElementById('lbImg').src = card.dataset.img;
+    document.getElementById('lightbox').classList.add('show');
+  });
+});
+// 证书横向滚动：恒定匀速自动滚动，完全自由，无任何手动干预
+let certAutoTimer = null;
+function certAutoStart(){
+  if(certAutoTimer) return;
+  certAutoTimer = setInterval(()=>{
+    certScroll.scrollLeft += 2.0; // 匀速滚动（约125px/s），永不暂停
+  }, 16);
+}
+certAutoStart();
+// 无缝循环：滚过第一份卡片末尾的瞬间跳回对应位置，末尾与开头视觉相连
+certScroll.addEventListener('scroll', ()=>{
+  const half = certScroll.scrollWidth / 2;
+  if(certScroll.scrollLeft >= half) certScroll.scrollLeft -= half;
+});
+document.getElementById('lbClose').addEventListener('click', ()=>{
+  document.getElementById('lightbox').classList.remove('show');
+});
+document.getElementById('lightbox').addEventListener('click', e=>{
+  if(e.target.id==='lightbox') e.currentTarget.classList.remove('show');
+});
+
+// ============ 漂浮墨点装饰 ============
+for(let i=0;i<14;i++){
+  const d = document.createElement('div');
+  d.className = 'ink-drop';
+  const s = 4 + Math.random()*14;
+  d.style.width = d.style.height = s+'px';
+  d.style.left = Math.random()*100+'vw';
+  d.style.top = Math.random()*100+'vh';
+  d.style.animation = `floatDrop ${8+Math.random()*10}s linear infinite`;
+  d.style.animationDelay = -Math.random()*10+'s';
+  document.body.appendChild(d);
+}
+const style = document.createElement('style');
+style.textContent = `@keyframes floatDrop{0%{transform:translateY(0) translateX(0)}50%{transform:translateY(-30px) translateX(15px)}100%{transform:translateY(0) translateX(0)}}`;
+document.head.appendChild(style);
+
+</script>
+</body>
+</html>
